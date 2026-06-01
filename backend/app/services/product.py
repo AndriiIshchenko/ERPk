@@ -17,7 +17,9 @@ class ProductService:
     async def _get_or_404(self, product_id: uuid.UUID) -> Product:
         product = await self.repo.get_by_id(product_id)
         if not product:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
+            )
         return product
 
     async def list_products(self) -> list[ProductRead]:
@@ -31,7 +33,9 @@ class ProductService:
     async def create_product(self, data: ProductCreate) -> ProductRead:
         vendor = await self.customer_repo.get_by_id(data.vendor_id)
         if not vendor:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vendor not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Vendor not found"
+            )
         if not vendor.is_vendor:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -48,7 +52,9 @@ class ProductService:
         if data.vendor_id is not None:
             vendor = await self.customer_repo.get_by_id(data.vendor_id)
             if not vendor:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vendor not found")
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail="Vendor not found"
+                )
             if not vendor.is_vendor:
                 raise HTTPException(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

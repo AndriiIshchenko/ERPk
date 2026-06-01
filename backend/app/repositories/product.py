@@ -22,9 +22,7 @@ class ProductRepository:
         return result.scalar_one_or_none()
 
     async def get_all(self, skip: int = 0, limit: int = 100) -> list[Product]:
-        result = await self.db.execute(
-            self._with_vendor().offset(skip).limit(limit)
-        )
+        result = await self.db.execute(self._with_vendor().offset(skip).limit(limit))
         return list(result.scalars().all())
 
     async def get_by_ids(self, product_ids: list[uuid.UUID]) -> list[Product]:

@@ -15,12 +15,12 @@ class CustomerService:
     async def _get_or_404(self, customer_id: uuid.UUID) -> Customer:
         customer = await self.repo.get_by_id(customer_id)
         if not customer:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found"
+            )
         return customer
 
-    async def list_customers(
-        self, is_vendor: bool | None = None
-    ) -> list[CustomerRead]:
+    async def list_customers(self, is_vendor: bool | None = None) -> list[CustomerRead]:
         customers = await self.repo.get_all(is_vendor=is_vendor)
         return [CustomerRead.model_validate(c) for c in customers]
 

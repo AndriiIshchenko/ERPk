@@ -40,7 +40,9 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
         user_id: str = payload.get("sub")
         if user_id is None:
             raise credentials_exception
@@ -48,6 +50,7 @@ async def get_current_user(
         raise credentials_exception
 
     from app.repositories.user import UserRepository
+
     user = await UserRepository(db).get_by_id(user_id)
     if user is None:
         raise credentials_exception

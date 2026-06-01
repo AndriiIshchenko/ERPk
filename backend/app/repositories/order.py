@@ -23,9 +23,7 @@ class OrderRepository:
 
     async def get_by_id(self, order_id: uuid.UUID) -> Order | None:
         result = await self.db.execute(
-            select(Order)
-            .options(*_order_options())
-            .where(Order.id == order_id)
+            select(Order).options(*_order_options()).where(Order.id == order_id)
         )
         return result.scalar_one_or_none()
 
@@ -66,9 +64,7 @@ class OrderRepository:
         await self.db.refresh(order)
 
         result = await self.db.execute(
-            select(Order)
-            .options(*_order_options())
-            .where(Order.id == order.id)
+            select(Order).options(*_order_options()).where(Order.id == order.id)
         )
         return result.scalar_one()
 

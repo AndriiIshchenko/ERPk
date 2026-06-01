@@ -50,6 +50,7 @@ class CustomerRepository:
 
     async def has_products(self, customer_id: uuid.UUID) -> bool:
         from app.models.product import Product
+
         result = await self.db.execute(
             select(Product).where(Product.vendor_id == customer_id).limit(1)
         )
