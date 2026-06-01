@@ -29,6 +29,11 @@ class CustomerService:
         return CustomerRead.model_validate(customer)
 
     async def create_customer(self, data: CustomerCreate) -> CustomerRead:
+        if await self.repo.get_by_email(data.email):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="A customer with this email already exists",
+            )
         customer = await self.repo.create(data)
         return CustomerRead.model_validate(customer)
 
@@ -36,6 +41,12 @@ class CustomerService:
         self, customer_id: uuid.UUID, data: CustomerUpdate
     ) -> CustomerRead:
         customer = await self._get_or_404(customer_id)
+        if data.email and data.email != customer.email:
+            if await self.repo.get_by_email(data.email):
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="A customer with this email already exists",
+                )
         customer = await self.repo.update(customer, data)
         return CustomerRead.model_validate(customer)
 

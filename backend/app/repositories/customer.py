@@ -17,6 +17,10 @@ class CustomerRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_by_email(self, email: str) -> Customer | None:
+        result = await self.db.execute(select(Customer).where(Customer.email == email))
+        return result.scalar_one_or_none()
+
     async def get_all(self, skip: int = 0, limit: int = 100) -> list[Customer]:
         result = await self.db.execute(select(Customer).offset(skip).limit(limit))
         return list(result.scalars().all())

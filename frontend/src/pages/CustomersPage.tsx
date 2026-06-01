@@ -19,8 +19,9 @@ export default function CustomersPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [error, setError] = useState("");
 
-  const resetForm = () => { setName(""); setEmail(""); setPhone(""); };
+  const resetForm = () => { setName(""); setEmail(""); setPhone(""); setError(""); };
 
   const openEdit = (c: Customer) => {
     setEditing(c);
@@ -30,19 +31,29 @@ export default function CustomersPage() {
   };
 
   const submitCreate = async () => {
-    await createMutation.mutateAsync({ name, email, phone: phone || undefined });
-    setShowCreate(false);
-    resetForm();
+    setError("");
+    try {
+      await createMutation.mutateAsync({ name, email, phone: phone || undefined });
+      setShowCreate(false);
+      resetForm();
+    } catch (e: any) {
+      setError(e?.response?.data?.detail ?? "Failed to create customer");
+    }
   };
 
   const submitEdit = async () => {
     if (!editing) return;
-    await updateMutation.mutateAsync({
-      id: editing.id,
-      payload: { name, email, phone: phone || undefined },
-    });
-    setEditing(null);
-    resetForm();
+    setError("");
+    try {
+      await updateMutation.mutateAsync({
+        id: editing.id,
+        payload: { name, email, phone: phone || undefined },
+      });
+      setEditing(null);
+      resetForm();
+    } catch (e: any) {
+      setError(e?.response?.data?.detail ?? "Failed to update customer");
+    }
   };
 
   if (isLoading) return <p>Loading…</p>;
@@ -85,7 +96,8 @@ export default function CustomersPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} style={input} />
             <input placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={input} />
-            <input placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} style={input} />
+            <input placeholder="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)} style={input} />
+            {error && <p style={{ margin: 0, color: "#dc2626", fontSize: 13 }}>{error}</p>}
             <button onClick={editing ? submitEdit : submitCreate} style={primaryBtn}>
               {editing ? "Save" : "Create"}
             </button>

@@ -17,6 +17,7 @@ export interface Product {
 export interface OrderItem {
   id: string;
   product_id: string;
+  product_name: string;
   price_snapshot: number;
 }
 
@@ -25,7 +26,7 @@ export interface Order {
   customer: Customer;
   items: OrderItem[];
   total_amount: number;
-  status: "pending" | "confirmed" | "cancelled";
+  status: "draft" | "pending" | "paid" | "cancelled";
   created_at: string;
 }
 

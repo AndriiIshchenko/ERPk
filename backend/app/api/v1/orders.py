@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import get_current_user
-from app.schemas.order import OrderCreate, OrderRead
+from app.schemas.order import OrderCreate, OrderItemAdd, OrderRead
 from app.services.order import OrderService
 
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -44,6 +44,53 @@ async def create_order(
     _=Depends(get_current_user),
 ):
     return await OrderService(db).create_order(data)
+
+
+@router.post("/{order_id}/items", response_model=OrderRead)
+async def add_item(
+    order_id: uuid.UUID,
+    data: OrderItemAdd,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    return await OrderService(db).add_item(order_id, data.product_id)
+
+
+@router.delete("/{order_id}/items/{item_id}", response_model=OrderRead)
+async def remove_item(
+    order_id: uuid.UUID,
+    item_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    return await OrderService(db).remove_item(order_id, item_id)
+
+
+@router.post("/{order_id}/pay", response_model=OrderRead)
+async def mark_paid(
+    order_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    return await OrderService(db).mark_paid(order_id)
+
+
+@router.post("/{order_id}/confirm", response_model=OrderRead)
+async def confirm_order(
+    order_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    return await OrderService(db).confirm_order(order_id)
+
+
+@router.post("/{order_id}/cancel", response_model=OrderRead)
+async def cancel_order(
+    order_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    return await OrderService(db).cancel_order(order_id)
 
 
 @router.delete("/{order_id}", status_code=204)

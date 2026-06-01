@@ -4,40 +4,29 @@ import Badge from "../components/Badge";
 import Modal from "../components/Modal";
 import { useCreateOrder, useDeleteOrder, useOrders } from "../hooks/useOrders";
 import { useCustomers } from "../hooks/useCustomers";
-import { useProducts } from "../hooks/useProducts";
 import { Order } from "../types";
 
 export default function OrdersPage() {
   const navigate = useNavigate();
   const { data: orders = [], isLoading } = useOrders();
   const { data: customers = [] } = useCustomers();
-  const { data: products = [] } = useProducts();
   const createMutation = useCreateOrder();
   const deleteMutation = useDeleteOrder();
 
   const [showCreate, setShowCreate] = useState(false);
   const [customerId, setCustomerId] = useState("");
-  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
-
-  const toggleProduct = (id: string) =>
-    setSelectedProducts((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-
-  const liveTotal = products
-    .filter((p) => selectedProducts.has(p.id))
-    .reduce((sum, p) => sum + Number(p.price), 0);
+  const [error, setError] = useState("");
 
   const submitCreate = async () => {
-    await createMutation.mutateAsync({
-      customer_id: customerId,
-      product_ids: Array.from(selectedProducts),
-    });
-    setShowCreate(false);
-    setCustomerId("");
-    setSelectedProducts(new Set());
+    setError("");
+    try {
+      const order = await createMutation.mutateAsync(customerId);
+      setShowCreate(false);
+      setCustomerId("");
+      navigate(`/orders/${order.id}`);
+    } catch (e: any) {
+      setError(e?.response?.data?.detail ?? "Failed to create order");
+    }
   };
 
   if (isLoading) return <p>Loading…</p>;
@@ -65,7 +54,7 @@ export default function OrdersPage() {
               onClick={() => navigate(`/orders/${o.id}`)}
             >
               <td style={td}>{o.customer.name}</td>
-              <td style={td}><Badge label={o.status} variant={o.status} /></td>
+              <td style={td}><Badge variant={o.status} /></td>
               <td style={td}>${Number(o.total_amount).toFixed(2)}</td>
               <td style={td}>{o.items.length}</td>
               <td style={td}>{new Date(o.created_at).toLocaleDateString()}</td>
@@ -78,7 +67,7 @@ export default function OrdersPage() {
       </table>
 
       {showCreate && (
-        <Modal title="New Order" onClose={() => { setShowCreate(false); setCustomerId(""); setSelectedProducts(new Set()); }}>
+        <Modal title="New Order" onClose={() => { setShowCreate(false); setCustomerId(""); setError(""); }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <select value={customerId} onChange={(e) => setCustomerId(e.target.value)} style={input}>
               <option value="">Select customer…</option>
@@ -86,18 +75,8 @@ export default function OrdersPage() {
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
-            <p style={{ margin: 0, fontWeight: 600, fontSize: 13 }}>Products</p>
-            <div style={{ maxHeight: 200, overflowY: "auto", border: "1px solid #e2e8f0", borderRadius: 4 }}>
-              {products.map((p) => (
-                <label key={p.id} style={{ display: "flex", gap: 8, padding: "8px 12px", borderBottom: "1px solid #f1f5f9", alignItems: "center", cursor: "pointer" }}>
-                  <input type="checkbox" checked={selectedProducts.has(p.id)} onChange={() => toggleProduct(p.id)} />
-                  <span>{p.name}</span>
-                  <span style={{ marginLeft: "auto", color: "#64748b" }}>${Number(p.price).toFixed(2)}</span>
-                </label>
-              ))}
-            </div>
-            <p style={{ margin: 0, fontWeight: 600 }}>Total: ${liveTotal.toFixed(2)}</p>
-            <button onClick={submitCreate} style={primaryBtn} disabled={!customerId || selectedProducts.size === 0}>
+            {error && <p style={{ margin: 0, color: "#dc2626", fontSize: 13 }}>{error}</p>}
+            <button onClick={submitCreate} style={primaryBtn} disabled={!customerId}>
               Create Order
             </button>
           </div>
@@ -108,7 +87,7 @@ export default function OrdersPage() {
 }
 
 const primaryBtn: React.CSSProperties = { background: "#2563eb", color: "#fff", border: "none", borderRadius: 4, padding: "8px 16px", cursor: "pointer", fontWeight: 600 };
-const actionBtn: React.CSSProperties = { background: "none", border: "none", cursor: "pointer", marginRight: 8 };
+const actionBtn: React.CSSProperties = { background: "none", border: "none", cursor: "pointer" };
 const th: React.CSSProperties = { padding: "10px 12px", textAlign: "left", fontSize: 13, fontWeight: 600 };
 const td: React.CSSProperties = { padding: "10px 12px", fontSize: 14 };
 const input: React.CSSProperties = { padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 4, fontSize: 14 };

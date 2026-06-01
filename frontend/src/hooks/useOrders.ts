@@ -1,11 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  addOrderItem,
+  cancelOrder,
+  confirmOrder,
   createOrder,
   deleteOrder,
   getOrder,
   getOrders,
   getOrdersByCustomer,
-  OrderPayload,
+  markOrderPaid,
+  removeOrderItem,
 } from "../api/orders";
 
 export const useOrders = () =>
@@ -28,8 +32,57 @@ export const useOrdersByCustomer = (customerId: string) =>
 export const useCreateOrder = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: OrderPayload) => createOrder(payload),
+    mutationFn: (customerId: string) => createOrder(customerId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["orders"] }),
+  });
+};
+
+export const useAddOrderItem = (orderId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (productId: string) => addOrderItem(orderId, productId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["orders", orderId] }),
+  });
+};
+
+export const useRemoveOrderItem = (orderId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (itemId: string) => removeOrderItem(orderId, itemId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["orders", orderId] }),
+  });
+};
+
+export const useConfirmOrder = (orderId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => confirmOrder(orderId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["orders", orderId] });
+      qc.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
+};
+
+export const useMarkOrderPaid = (orderId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => markOrderPaid(orderId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["orders", orderId] });
+      qc.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
+};
+
+export const useCancelOrder = (orderId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => cancelOrder(orderId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["orders", orderId] });
+      qc.invalidateQueries({ queryKey: ["orders"] });
+    },
   });
 };
 

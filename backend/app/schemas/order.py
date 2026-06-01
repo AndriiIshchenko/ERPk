@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 
 from app.schemas.customer import CustomerRead
 
@@ -10,6 +10,7 @@ from app.schemas.customer import CustomerRead
 class OrderItemRead(BaseModel):
     id: uuid.UUID
     product_id: uuid.UUID
+    product_name: str
     price_snapshot: Decimal
 
     model_config = {"from_attributes": True}
@@ -17,14 +18,10 @@ class OrderItemRead(BaseModel):
 
 class OrderCreate(BaseModel):
     customer_id: uuid.UUID
-    product_ids: list[uuid.UUID]
 
-    @field_validator("product_ids")
-    @classmethod
-    def at_least_one_product(cls, v: list) -> list:
-        if len(v) < 1:
-            raise ValueError("Order must contain at least one product")
-        return v
+
+class OrderItemAdd(BaseModel):
+    product_id: uuid.UUID
 
 
 class OrderRead(BaseModel):

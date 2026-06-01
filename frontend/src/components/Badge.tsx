@@ -1,16 +1,23 @@
 interface Props {
   label: string;
-  variant: "vendor" | "pending" | "confirmed" | "cancelled";
+  variant: "draft" | "pending" | "paid" | "cancelled";
 }
 
 const colors: Record<Props["variant"], string> = {
-  vendor: "#2563eb",
-  pending: "#d97706",
-  confirmed: "#16a34a",
+  draft:     "#64748b",
+  pending:   "#d97706",
+  paid:      "#16a34a",
   cancelled: "#dc2626",
 };
 
-export default function Badge({ label, variant }: Props) {
+const labels: Record<Props["variant"], string> = {
+  draft:     "Draft",
+  pending:   "Pending Payment",
+  paid:      "Paid",
+  cancelled: "Cancelled",
+};
+
+export default function Badge({ variant }: Omit<Props, "label">) {
   return (
     <span
       style={{
@@ -20,9 +27,10 @@ export default function Badge({ label, variant }: Props) {
         padding: "2px 8px",
         fontSize: 12,
         fontWeight: 600,
+        whiteSpace: "nowrap",
       }}
     >
-      {label}
+      {labels[variant]}
     </span>
   );
 }

@@ -11,8 +11,9 @@ import enum
 
 
 class OrderStatus(str, enum.Enum):
+    draft = "draft"
     pending = "pending"
-    confirmed = "confirmed"
+    paid = "paid"
     cancelled = "cancelled"
 
 
@@ -53,3 +54,7 @@ class OrderItem(Base):
 
     order: Mapped["Order"] = relationship("Order", back_populates="items")
     product: Mapped["Product"] = relationship("Product", back_populates="order_items")
+
+    @property
+    def product_name(self) -> str:
+        return self.product.name if self.product else ""

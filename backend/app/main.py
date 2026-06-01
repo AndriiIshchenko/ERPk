@@ -1,9 +1,24 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.v1 import auth, customers, orders, products
 
 app = FastAPI(title="ERPk Order Management", version="1.0.0")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    messages = []
+    for error in exc.errors():
+        field = ".".join(str(loc) for loc in error["loc"] if loc != "body")
+        msg = error["msg"].replace("Value error, ", "")
+        messages.append(f"{field}: {msg}" if field else msg)
+    return JSONResponse(
+        status_code=422,
+        content={"detail": messages[0] if len(messages) == 1 else messages},
+    )
 
 app.add_middleware(
     CORSMiddleware,
