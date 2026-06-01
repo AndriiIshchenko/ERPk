@@ -20,8 +20,8 @@ class CustomerService:
             )
         return customer
 
-    async def list_customers(self, is_vendor: bool | None = None) -> list[CustomerRead]:
-        customers = await self.repo.get_all(is_vendor=is_vendor)
+    async def list_customers(self) -> list[CustomerRead]:
+        customers = await self.repo.get_all()
         return [CustomerRead.model_validate(c) for c in customers]
 
     async def get_customer(self, customer_id: uuid.UUID) -> CustomerRead:
@@ -36,15 +36,6 @@ class CustomerService:
         self, customer_id: uuid.UUID, data: CustomerUpdate
     ) -> CustomerRead:
         customer = await self._get_or_404(customer_id)
-
-        if data.is_vendor is False and customer.is_vendor is True:
-            has_products = await self.repo.has_products(customer_id)
-            if has_products:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="Cannot remove vendor status: customer has associated products",
-                )
-
         customer = await self.repo.update(customer, data)
         return CustomerRead.model_validate(customer)
 

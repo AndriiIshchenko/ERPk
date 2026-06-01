@@ -13,11 +13,10 @@ router = APIRouter(prefix="/customers", tags=["customers"])
 
 @router.get("/", response_model=list[CustomerRead])
 async def list_customers(
-    is_vendor: bool | None = None,
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    return await CustomerService(db).list_customers(is_vendor=is_vendor)
+    return await CustomerService(db).list_customers()
 
 
 @router.get("/{customer_id}", response_model=CustomerRead)

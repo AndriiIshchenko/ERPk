@@ -17,17 +17,8 @@ class CustomerRepository:
         )
         return result.scalar_one_or_none()
 
-    async def get_all(
-        self,
-        skip: int = 0,
-        limit: int = 100,
-        is_vendor: bool | None = None,
-    ) -> list[Customer]:
-        stmt = select(Customer)
-        if is_vendor is not None:
-            stmt = stmt.where(Customer.is_vendor == is_vendor)
-        stmt = stmt.offset(skip).limit(limit)
-        result = await self.db.execute(stmt)
+    async def get_all(self, skip: int = 0, limit: int = 100) -> list[Customer]:
+        result = await self.db.execute(select(Customer).offset(skip).limit(limit))
         return list(result.scalars().all())
 
     async def create(self, data: CustomerCreate) -> Customer:
@@ -47,11 +38,3 @@ class CustomerRepository:
     async def delete(self, customer: Customer) -> None:
         await self.db.delete(customer)
         await self.db.commit()
-
-    async def has_products(self, customer_id: uuid.UUID) -> bool:
-        from app.models.product import Product
-
-        result = await self.db.execute(
-            select(Product).where(Product.vendor_id == customer_id).limit(1)
-        )
-        return result.scalar_one_or_none() is not None
