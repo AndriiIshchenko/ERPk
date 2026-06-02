@@ -19,7 +19,9 @@ class OrderService:
     async def _get_or_404(self, order_id: uuid.UUID) -> Order:
         order = await self.repo.get_by_id(order_id)
         if not order:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Order not found"
+            )
         return order
 
     def _require_draft(self, order: Order) -> None:
@@ -43,7 +45,9 @@ class OrderService:
 
     async def create_order(self, data: OrderCreate) -> OrderRead:
         if not await self.customer_repo.get_by_id(data.customer_id):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found"
+            )
         order = await self.repo.create(data.customer_id)
         return OrderRead.model_validate(order)
 
@@ -57,7 +61,9 @@ class OrderService:
             )
         product = await self.product_repo.get_by_id(product_id)
         if not product:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
+            )
         order = await self.repo.add_item(order, product)
         return OrderRead.model_validate(order)
 
@@ -66,7 +72,9 @@ class OrderService:
         self._require_draft(order)
         item = await self.repo.get_item(order_id, item_id)
         if not item:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+            )
         order = await self.repo.remove_item(order, item)
         return OrderRead.model_validate(order)
 

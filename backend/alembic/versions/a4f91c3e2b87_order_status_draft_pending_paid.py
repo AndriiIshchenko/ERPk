@@ -29,7 +29,9 @@ def upgrade() -> None:
 
     # 3. Drop old enum and create the new one
     op.execute("DROP TYPE orderstatus")
-    op.execute("CREATE TYPE orderstatus AS ENUM ('draft', 'pending', 'paid', 'cancelled')")
+    op.execute(
+        "CREATE TYPE orderstatus AS ENUM ('draft', 'pending', 'paid', 'cancelled')"
+    )
 
     # 4. Convert column back to the new enum type
     op.execute(

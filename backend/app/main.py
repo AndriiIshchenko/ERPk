@@ -20,6 +20,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"detail": messages[0] if len(messages) == 1 else messages},
     )
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://frontend:5173"],

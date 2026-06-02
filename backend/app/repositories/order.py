@@ -47,7 +47,9 @@ class OrderRepository:
         )
         return list(result.scalars().all())
 
-    async def get_item(self, order_id: uuid.UUID, item_id: uuid.UUID) -> OrderItem | None:
+    async def get_item(
+        self, order_id: uuid.UUID, item_id: uuid.UUID
+    ) -> OrderItem | None:
         result = await self.db.execute(
             select(OrderItem).where(
                 OrderItem.id == item_id, OrderItem.order_id == order_id

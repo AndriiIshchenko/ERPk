@@ -5,7 +5,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.product import Product
 from app.repositories.product import ProductRepository
-from app.schemas.product import ProductCreate, ProductHistoryRead, ProductRead, ProductUpdate
+from app.schemas.product import (
+    ProductCreate,
+    ProductHistoryRead,
+    ProductRead,
+    ProductUpdate,
+)
 
 
 class ProductService:
@@ -44,16 +49,21 @@ class ProductService:
         product = await self.repo.update(product, data, user_id)
         return ProductRead.model_validate(product)
 
-    async def deactivate_product(self, product_id: uuid.UUID, user_id: uuid.UUID) -> ProductRead:
+    async def deactivate_product(
+        self, product_id: uuid.UUID, user_id: uuid.UUID
+    ) -> ProductRead:
         product = await self._get_or_404(product_id)
         if not product.is_active:
             raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT, detail="Product is already inactive"
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Product is already inactive",
             )
         product = await self.repo.deactivate(product, user_id)
         return ProductRead.model_validate(product)
 
-    async def restore_product(self, product_id: uuid.UUID, user_id: uuid.UUID) -> ProductRead:
+    async def restore_product(
+        self, product_id: uuid.UUID, user_id: uuid.UUID
+    ) -> ProductRead:
         product = await self._get_or_404(product_id)
         if product.is_active:
             raise HTTPException(

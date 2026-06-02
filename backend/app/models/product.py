@@ -26,7 +26,9 @@ class Product(Base):
         "OrderItem", back_populates="product"
     )
     history: Mapped[list["ProductHistory"]] = relationship(
-        "ProductHistory", back_populates="product", order_by="ProductHistory.changed_at.desc()"
+        "ProductHistory",
+        back_populates="product",
+        order_by="ProductHistory.changed_at.desc()",
     )
 
     @property

@@ -40,7 +40,9 @@ class ProductRepository:
         )
         return list(result.scalars().all())
 
-    def _snapshot(self, product: Product, change_type: str, user_id: uuid.UUID) -> ProductHistory:
+    def _snapshot(
+        self, product: Product, change_type: str, user_id: uuid.UUID
+    ) -> ProductHistory:
         return ProductHistory(
             product_id=product.id,
             changed_by_user_id=user_id,
@@ -57,7 +59,9 @@ class ProductRepository:
         await self.db.refresh(product)
         return product
 
-    async def update(self, product: Product, data: ProductUpdate, user_id: uuid.UUID) -> Product:
+    async def update(
+        self, product: Product, data: ProductUpdate, user_id: uuid.UUID
+    ) -> Product:
         self.db.add(self._snapshot(product, "update", user_id))
         for field, value in data.model_dump(exclude_unset=True).items():
             setattr(product, field, value)

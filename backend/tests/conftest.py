@@ -11,7 +11,9 @@ TEST_DATABASE_URL = os.getenv(
 )
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
-TestSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+TestSessionLocal = async_sessionmaker(
+    engine, class_=AsyncSession, expire_on_commit=False
+)
 
 
 @pytest.fixture(scope="session", autouse=True)
