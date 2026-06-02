@@ -18,7 +18,17 @@ class Product(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
+    deactivated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None
+    )
 
     order_items: Mapped[list["OrderItem"]] = relationship(
         "OrderItem", back_populates="product"
     )
+    history: Mapped[list["ProductHistory"]] = relationship(
+        "ProductHistory", back_populates="product", order_by="ProductHistory.changed_at.desc()"
+    )
+
+    @property
+    def is_active(self) -> bool:
+        return self.deactivated_at is None

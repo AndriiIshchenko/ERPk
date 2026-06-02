@@ -22,6 +22,20 @@ class ProductRead(BaseModel):
     name: str
     description: str | None
     price: Decimal
+    is_active: bool
+    deactivated_at: datetime | None
     created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ProductHistoryRead(BaseModel):
+    id: uuid.UUID
+    name: str
+    description: str | None
+    price: Decimal
+    change_type: str
+    changed_at: datetime
+    changed_by_email: str
 
     model_config = {"from_attributes": True}

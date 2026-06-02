@@ -1,11 +1,12 @@
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import get_current_user
-from app.schemas.product import ProductCreate, ProductRead, ProductUpdate
+from app.models.user import User
+from app.schemas.product import ProductCreate, ProductHistoryRead, ProductRead, ProductUpdate
 from app.services.product import ProductService
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -13,26 +14,36 @@ router = APIRouter(prefix="/products", tags=["products"])
 
 @router.get("/", response_model=list[ProductRead])
 async def list_products(
+    include_inactive: bool = Query(default=False),
     db: AsyncSession = Depends(get_db),
-    _=Depends(get_current_user),
+    _: User = Depends(get_current_user),
 ):
-    return await ProductService(db).list_products()
+    return await ProductService(db).list_products(include_inactive=include_inactive)
 
 
 @router.get("/{product_id}", response_model=ProductRead)
 async def get_product(
     product_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    _=Depends(get_current_user),
+    _: User = Depends(get_current_user),
 ):
     return await ProductService(db).get_product(product_id)
+
+
+@router.get("/{product_id}/history", response_model=list[ProductHistoryRead])
+async def get_product_history(
+    product_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    return await ProductService(db).get_history(product_id)
 
 
 @router.post("/", response_model=ProductRead, status_code=201)
 async def create_product(
     data: ProductCreate,
     db: AsyncSession = Depends(get_db),
-    _=Depends(get_current_user),
+    _: User = Depends(get_current_user),
 ):
     return await ProductService(db).create_product(data)
 
@@ -42,15 +53,24 @@ async def update_product(
     product_id: uuid.UUID,
     data: ProductUpdate,
     db: AsyncSession = Depends(get_db),
-    _=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
-    return await ProductService(db).update_product(product_id, data)
+    return await ProductService(db).update_product(product_id, data, current_user.id)
 
 
-@router.delete("/{product_id}", status_code=204)
-async def delete_product(
+@router.post("/{product_id}/deactivate", response_model=ProductRead)
+async def deactivate_product(
     product_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    _=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
-    await ProductService(db).delete_product(product_id)
+    return await ProductService(db).deactivate_product(product_id, current_user.id)
+
+
+@router.post("/{product_id}/restore", response_model=ProductRead)
+async def restore_product(
+    product_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await ProductService(db).restore_product(product_id, current_user.id)

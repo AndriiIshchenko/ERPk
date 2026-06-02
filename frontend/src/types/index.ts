@@ -11,7 +11,19 @@ export interface Product {
   name: string;
   description?: string;
   price: number;
+  is_active: boolean;
+  deactivated_at?: string;
   created_at: string;
+}
+
+export interface ProductHistory {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  change_type: "update" | "deactivate" | "restore";
+  changed_at: string;
+  changed_by_email: string;
 }
 
 export interface OrderItem {

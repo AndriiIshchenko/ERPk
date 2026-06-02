@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.product import Product
 from app.repositories.product import ProductRepository
-from app.schemas.product import ProductCreate, ProductRead, ProductUpdate
+from app.schemas.product import ProductCreate, ProductHistoryRead, ProductRead, ProductUpdate
 
 
 class ProductService:
@@ -20,8 +20,8 @@ class ProductService:
             )
         return product
 
-    async def list_products(self) -> list[ProductRead]:
-        products = await self.repo.get_all()
+    async def list_products(self, include_inactive: bool = False) -> list[ProductRead]:
+        products = await self.repo.get_all(include_inactive=include_inactive)
         return [ProductRead.model_validate(p) for p in products]
 
     async def get_product(self, product_id: uuid.UUID) -> ProductRead:
@@ -33,12 +33,36 @@ class ProductService:
         return ProductRead.model_validate(product)
 
     async def update_product(
-        self, product_id: uuid.UUID, data: ProductUpdate
+        self, product_id: uuid.UUID, data: ProductUpdate, user_id: uuid.UUID
     ) -> ProductRead:
         product = await self._get_or_404(product_id)
-        product = await self.repo.update(product, data)
+        if not product.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Cannot edit an inactive product — restore it first",
+            )
+        product = await self.repo.update(product, data, user_id)
         return ProductRead.model_validate(product)
 
-    async def delete_product(self, product_id: uuid.UUID) -> None:
+    async def deactivate_product(self, product_id: uuid.UUID, user_id: uuid.UUID) -> ProductRead:
         product = await self._get_or_404(product_id)
-        await self.repo.delete(product)
+        if not product.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Product is already inactive"
+            )
+        product = await self.repo.deactivate(product, user_id)
+        return ProductRead.model_validate(product)
+
+    async def restore_product(self, product_id: uuid.UUID, user_id: uuid.UUID) -> ProductRead:
+        product = await self._get_or_404(product_id)
+        if product.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Product is already active"
+            )
+        product = await self.repo.restore(product, user_id)
+        return ProductRead.model_validate(product)
+
+    async def get_history(self, product_id: uuid.UUID) -> list[ProductHistoryRead]:
+        await self._get_or_404(product_id)
+        history = await self.repo.get_history(product_id)
+        return [ProductHistoryRead.model_validate(h) for h in history]

@@ -25,7 +25,7 @@ class Order(Base):
         ForeignKey("customers.id"), nullable=False
     )
     status: Mapped[OrderStatus] = mapped_column(
-        Enum(OrderStatus), default=OrderStatus.pending, nullable=False
+        Enum(OrderStatus), default=OrderStatus.draft, nullable=False
     )
     total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     created_at: Mapped[datetime] = mapped_column(

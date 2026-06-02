@@ -16,7 +16,7 @@ export default function OrderDetailPage() {
   const navigate = useNavigate();
 
   const { data: order, isLoading } = useOrder(id);
-  const { data: products = [] } = useProducts();
+  const { data: products = [] } = useProducts(false); // active only
 
   const addItem = useAddOrderItem(id);
   const removeItem = useRemoveOrderItem(id);
