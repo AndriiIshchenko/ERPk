@@ -1,5 +1,6 @@
 CLAUDE.md
-
+IMPLEMENTATION_PLAN.md
+CLAUDE.local.md
 # env
 .env
 
@@ -24,4 +25,4 @@ frontend/dist/
 
 # OS
 .DS_Store
-.github/workflows/ci.yml
+#.github/workflows/ci.yml
