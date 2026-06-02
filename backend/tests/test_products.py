@@ -1,6 +1,5 @@
 from httpx import AsyncClient
 
-
 # ── Helper ────────────────────────────────────────────────────────────────────
 
 
@@ -46,22 +45,17 @@ async def test_list_products_excludes_inactive_by_default(
     client: AsyncClient, auth_headers: dict
 ):
     p = await _create_product(client, auth_headers, "ToDeactivate", "1.00")
-    await client.post(
-        f"/api/v1/products/{p['id']}/deactivate", headers=auth_headers
-    )
-    ids = [x["id"] for x in (await client.get(
-        "/api/v1/products/", headers=auth_headers
-    )).json()]
+    await client.post(f"/api/v1/products/{p['id']}/deactivate", headers=auth_headers)
+    ids = [
+        x["id"]
+        for x in (await client.get("/api/v1/products/", headers=auth_headers)).json()
+    ]
     assert p["id"] not in ids
 
 
-async def test_list_products_include_inactive(
-    client: AsyncClient, auth_headers: dict
-):
+async def test_list_products_include_inactive(client: AsyncClient, auth_headers: dict):
     p = await _create_product(client, auth_headers, "OldItem", "1.00")
-    await client.post(
-        f"/api/v1/products/{p['id']}/deactivate", headers=auth_headers
-    )
+    await client.post(f"/api/v1/products/{p['id']}/deactivate", headers=auth_headers)
     resp = await client.get(
         "/api/v1/products/?include_inactive=true", headers=auth_headers
     )
@@ -108,9 +102,7 @@ async def test_update_inactive_product_rejected(
     client: AsyncClient, auth_headers: dict
 ):
     p = await _create_product(client, auth_headers, "Inactive", "5.00")
-    await client.post(
-        f"/api/v1/products/{p['id']}/deactivate", headers=auth_headers
-    )
+    await client.post(f"/api/v1/products/{p['id']}/deactivate", headers=auth_headers)
     resp = await client.put(
         f"/api/v1/products/{p['id']}",
         json={"name": "ShouldFail", "price": "9.00"},
@@ -133,9 +125,7 @@ async def test_deactivate_product(client: AsyncClient, auth_headers: dict):
 
 async def test_deactivate_already_inactive(client: AsyncClient, auth_headers: dict):
     p = await _create_product(client, auth_headers, "Active2", "5.00")
-    await client.post(
-        f"/api/v1/products/{p['id']}/deactivate", headers=auth_headers
-    )
+    await client.post(f"/api/v1/products/{p['id']}/deactivate", headers=auth_headers)
     resp = await client.post(
         f"/api/v1/products/{p['id']}/deactivate", headers=auth_headers
     )
@@ -144,9 +134,7 @@ async def test_deactivate_already_inactive(client: AsyncClient, auth_headers: di
 
 async def test_restore_product(client: AsyncClient, auth_headers: dict):
     p = await _create_product(client, auth_headers, "ToRestore", "5.00")
-    await client.post(
-        f"/api/v1/products/{p['id']}/deactivate", headers=auth_headers
-    )
+    await client.post(f"/api/v1/products/{p['id']}/deactivate", headers=auth_headers)
     resp = await client.post(
         f"/api/v1/products/{p['id']}/restore", headers=auth_headers
     )
@@ -172,9 +160,7 @@ async def test_history_after_update(client: AsyncClient, auth_headers: dict):
         json={"name": "Updated", "price": "12.00"},
         headers=auth_headers,
     )
-    resp = await client.get(
-        f"/api/v1/products/{p['id']}/history", headers=auth_headers
-    )
+    resp = await client.get(f"/api/v1/products/{p['id']}/history", headers=auth_headers)
     assert resp.status_code == 200
     history = resp.json()
     assert len(history) == 1
@@ -188,15 +174,9 @@ async def test_history_after_deactivate_and_restore(
     client: AsyncClient, auth_headers: dict
 ):
     p = await _create_product(client, auth_headers, "Lifecycle", "7.00")
-    await client.post(
-        f"/api/v1/products/{p['id']}/deactivate", headers=auth_headers
-    )
-    await client.post(
-        f"/api/v1/products/{p['id']}/restore", headers=auth_headers
-    )
-    resp = await client.get(
-        f"/api/v1/products/{p['id']}/history", headers=auth_headers
-    )
+    await client.post(f"/api/v1/products/{p['id']}/deactivate", headers=auth_headers)
+    await client.post(f"/api/v1/products/{p['id']}/restore", headers=auth_headers)
+    resp = await client.get(f"/api/v1/products/{p['id']}/history", headers=auth_headers)
     assert resp.status_code == 200
     history = resp.json()
     assert len(history) == 2
@@ -205,12 +185,8 @@ async def test_history_after_deactivate_and_restore(
     assert "restore" in types
 
 
-async def test_history_empty_for_new_product(
-    client: AsyncClient, auth_headers: dict
-):
+async def test_history_empty_for_new_product(client: AsyncClient, auth_headers: dict):
     p = await _create_product(client, auth_headers, "Fresh", "3.00")
-    resp = await client.get(
-        f"/api/v1/products/{p['id']}/history", headers=auth_headers
-    )
+    resp = await client.get(f"/api/v1/products/{p['id']}/history", headers=auth_headers)
     assert resp.status_code == 200
     assert resp.json() == []

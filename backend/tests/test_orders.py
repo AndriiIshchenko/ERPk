@@ -1,6 +1,5 @@
 from httpx import AsyncClient
 
-
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 
@@ -26,9 +25,7 @@ async def _make_product(
     return resp.json()["id"]
 
 
-async def _create_order(
-    client: AsyncClient, headers: dict, customer_id: str
-) -> dict:
+async def _create_order(client: AsyncClient, headers: dict, customer_id: str) -> dict:
     resp = await client.post(
         "/api/v1/orders/",
         json={"customer_id": customer_id},
@@ -38,9 +35,7 @@ async def _create_order(
     return resp.json()
 
 
-async def _add_item(
-    client: AsyncClient, headers: dict, order_id: str, product_id: str
-):
+async def _add_item(client: AsyncClient, headers: dict, order_id: str, product_id: str):
     return await client.post(
         f"/api/v1/orders/{order_id}/items",
         json={"product_id": product_id},
@@ -114,9 +109,7 @@ async def test_add_item_to_confirmed_order(client: AsyncClient, auth_headers: di
     pid2 = await _make_product(client, auth_headers, "B", "2.00")
     order = await _create_order(client, auth_headers, cid)
     await _add_item(client, auth_headers, order["id"], pid1)
-    await client.post(
-        f"/api/v1/orders/{order['id']}/confirm", headers=auth_headers
-    )
+    await client.post(f"/api/v1/orders/{order['id']}/confirm", headers=auth_headers)
     resp = await _add_item(client, auth_headers, order["id"], pid2)
     assert resp.status_code == 409
 
@@ -170,12 +163,8 @@ async def test_mark_paid(client: AsyncClient, auth_headers: dict):
     pid = await _make_product(client, auth_headers, "Item", "15.00")
     order = await _create_order(client, auth_headers, cid)
     await _add_item(client, auth_headers, order["id"], pid)
-    await client.post(
-        f"/api/v1/orders/{order['id']}/confirm", headers=auth_headers
-    )
-    resp = await client.post(
-        f"/api/v1/orders/{order['id']}/pay", headers=auth_headers
-    )
+    await client.post(f"/api/v1/orders/{order['id']}/confirm", headers=auth_headers)
+    resp = await client.post(f"/api/v1/orders/{order['id']}/pay", headers=auth_headers)
     assert resp.status_code == 200
     assert resp.json()["status"] == "paid"
 
@@ -183,9 +172,7 @@ async def test_mark_paid(client: AsyncClient, auth_headers: dict):
 async def test_mark_paid_non_pending(client: AsyncClient, auth_headers: dict):
     cid = await _make_customer(client, auth_headers, "buyer10@example.com")
     order = await _create_order(client, auth_headers, cid)
-    resp = await client.post(
-        f"/api/v1/orders/{order['id']}/pay", headers=auth_headers
-    )
+    resp = await client.post(f"/api/v1/orders/{order['id']}/pay", headers=auth_headers)
     assert resp.status_code == 409
 
 
@@ -204,9 +191,7 @@ async def test_cancel_pending_order(client: AsyncClient, auth_headers: dict):
     pid = await _make_product(client, auth_headers, "Item", "5.00")
     order = await _create_order(client, auth_headers, cid)
     await _add_item(client, auth_headers, order["id"], pid)
-    await client.post(
-        f"/api/v1/orders/{order['id']}/confirm", headers=auth_headers
-    )
+    await client.post(f"/api/v1/orders/{order['id']}/confirm", headers=auth_headers)
     resp = await client.post(
         f"/api/v1/orders/{order['id']}/cancel", headers=auth_headers
     )
@@ -219,9 +204,7 @@ async def test_cancel_paid_order(client: AsyncClient, auth_headers: dict):
     pid = await _make_product(client, auth_headers, "Item", "5.00")
     order = await _create_order(client, auth_headers, cid)
     await _add_item(client, auth_headers, order["id"], pid)
-    await client.post(
-        f"/api/v1/orders/{order['id']}/confirm", headers=auth_headers
-    )
+    await client.post(f"/api/v1/orders/{order['id']}/confirm", headers=auth_headers)
     await client.post(f"/api/v1/orders/{order['id']}/pay", headers=auth_headers)
     resp = await client.post(
         f"/api/v1/orders/{order['id']}/cancel", headers=auth_headers
@@ -244,9 +227,7 @@ async def test_list_orders_by_customer(client: AsyncClient, auth_headers: dict):
     pid = await _make_product(client, auth_headers, "Item", "4.00")
     await _add_item(client, auth_headers, order["id"], pid)
 
-    resp = await client.get(
-        f"/api/v1/orders/customer/{cid}", headers=auth_headers
-    )
+    resp = await client.get(f"/api/v1/orders/customer/{cid}", headers=auth_headers)
     assert resp.status_code == 200
     assert all(o["customer"]["id"] == cid for o in resp.json())
 
@@ -271,7 +252,5 @@ async def test_get_order_not_found(client: AsyncClient, auth_headers: dict):
 async def test_delete_order(client: AsyncClient, auth_headers: dict):
     cid = await _make_customer(client, auth_headers, "buyer16@example.com")
     order = await _create_order(client, auth_headers, cid)
-    resp = await client.delete(
-        f"/api/v1/orders/{order['id']}", headers=auth_headers
-    )
+    resp = await client.delete(f"/api/v1/orders/{order['id']}", headers=auth_headers)
     assert resp.status_code == 204
