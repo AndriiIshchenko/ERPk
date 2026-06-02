@@ -28,7 +28,7 @@ class OrderService:
         if order.status != OrderStatus.draft:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="Order is not in draft — items can only be changed before confirmation",
+                detail="Items can only be changed while the order is in draft",
             )
 
     async def list_orders(self) -> list[OrderRead]:

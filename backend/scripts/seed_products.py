@@ -2,7 +2,8 @@
 Seed 200 tech products (computers & peripherals, Alza-style).
 Usage:
     docker compose exec backend python -m scripts.seed_products
-    DATABASE_URL=postgresql+asyncpg://erpk:erpk@localhost:5432/orders_db python -m scripts.seed_products
+    DATABASE_URL=postgresql+asyncpg://erpk:erpk@localhost:5432/orders_db \
+        python -m scripts.seed_products
 """
 
 import asyncio
