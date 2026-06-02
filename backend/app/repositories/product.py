@@ -23,7 +23,7 @@ class ProductRepository:
         return result.scalar_one_or_none()
 
     async def get_all(self, include_inactive: bool = False) -> list[Product]:
-        """Return all products; filters out inactive ones unless include_inactive is True."""
+        """Return all products; inactive ones excluded unless include_inactive is True."""
         stmt = select(Product)
         if not include_inactive:
             stmt = stmt.where(Product.deactivated_at.is_(None))
@@ -38,7 +38,7 @@ class ProductRepository:
         return list(result.scalars().all())
 
     async def get_history(self, product_id: uuid.UUID) -> list[ProductHistory]:
-        """Return audit history rows for a product, newest first, with changed_by user loaded."""
+        """Return audit history for a product, newest first, with changed_by loaded."""
         result = await self.db.execute(
             select(ProductHistory)
             .options(joinedload(ProductHistory.changed_by))

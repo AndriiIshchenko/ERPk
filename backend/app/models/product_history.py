@@ -35,5 +35,5 @@ class ProductHistory(Base):
 
     @property
     def changed_by_email(self) -> str:
-        """Return the email of the user who made this change, or empty string if unloaded."""
+        """Return the email of the user who made this change, or empty string if not loaded."""
         return self.changed_by.email if self.changed_by else ""

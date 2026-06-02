@@ -52,7 +52,7 @@ class OrderService:
         return [OrderRead.model_validate(o) for o in orders]
 
     async def create_order(self, data: OrderCreate) -> OrderRead:
-        """Create a new draft order for an existing customer; raises 404 if customer not found."""
+        """Create a draft order for an existing customer; 404 if customer not found."""
         if not await self.customer_repo.get_by_id(data.customer_id):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found"
@@ -61,7 +61,7 @@ class OrderService:
         return OrderRead.model_validate(order)
 
     async def add_item(self, order_id: uuid.UUID, product_id: uuid.UUID) -> OrderRead:
-        """Add a product to a draft order; raises 409 if duplicate or order not draft."""
+        """Add a product to a draft order; 409 if duplicate or order is not draft."""
         order = await self._get_or_404(order_id)
         self._require_draft(order)
         if any(item.product_id == product_id for item in order.items):
@@ -78,7 +78,7 @@ class OrderService:
         return OrderRead.model_validate(order)
 
     async def remove_item(self, order_id: uuid.UUID, item_id: uuid.UUID) -> OrderRead:
-        """Remove a line item from a draft order; raises 409 if order not draft, 404 if item missing."""
+        """Remove a line item from a draft order; 409 if not draft, 404 if item missing."""
         order = await self._get_or_404(order_id)
         self._require_draft(order)
         item = await self.repo.get_item(order_id, item_id)
@@ -90,7 +90,7 @@ class OrderService:
         return OrderRead.model_validate(order)
 
     async def confirm_order(self, order_id: uuid.UUID) -> OrderRead:
-        """Transition a draft order to pending; raises 422 if empty, 409 if not draft."""
+        """Move a draft order to pending; 422 if empty, 409 if not draft."""
         order = await self._get_or_404(order_id)
         self._require_draft(order)
         if not order.items:

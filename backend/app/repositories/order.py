@@ -10,7 +10,7 @@ from app.models.product import Product
 
 
 def _order_opts():
-    """Return the standard eager-load options for Order queries (customer + items with product)."""
+    """Return eager-load options for Order queries (customer + items with product)."""
     return (
         joinedload(Order.customer),
         selectinload(Order.items).joinedload(OrderItem.product),
@@ -77,7 +77,7 @@ class OrderRepository:
         return await _reload(self.db, order.id)
 
     async def add_item(self, order: Order, product: Product) -> Order:
-        """Add a product line item and update the order total; returns reloaded order."""
+        """Add a product line item, update the order total, return reloaded order."""
         item = OrderItem(
             order_id=order.id,
             product_id=product.id,
@@ -89,7 +89,7 @@ class OrderRepository:
         return await _reload(self.db, order.id)
 
     async def remove_item(self, order: Order, item: OrderItem) -> Order:
-        """Delete a line item and subtract its snapshot price from the order total; returns reloaded order."""
+        """Delete a line item, subtract its snapshot price from the total, return reloaded order."""
         order.total_amount = Decimal(str(order.total_amount)) - item.price_snapshot
         await self.db.delete(item)
         await self.db.commit()

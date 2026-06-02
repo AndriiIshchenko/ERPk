@@ -37,7 +37,7 @@ async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db),
 ):
-    """FastAPI dependency that decodes the Bearer token and returns the authenticated user."""
+    """Decode the Bearer token and return the authenticated user."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

@@ -57,5 +57,5 @@ class OrderItem(Base):
 
     @property
     def product_name(self) -> str:
-        """Return the product's name, or empty string if the relationship is not loaded."""
+        """Return the product's name, or empty string if relationship is not loaded."""
         return self.product.name if self.product else ""

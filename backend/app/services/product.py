@@ -30,7 +30,7 @@ class ProductService:
         return product
 
     async def list_products(self, include_inactive: bool = False) -> list[ProductRead]:
-        """Return products; inactive products excluded unless include_inactive is True."""
+        """Return products; inactive ones excluded unless include_inactive is True."""
         products = await self.repo.get_all(include_inactive=include_inactive)
         return [ProductRead.model_validate(p) for p in products]
 
@@ -47,7 +47,7 @@ class ProductService:
     async def update_product(
         self, product_id: uuid.UUID, data: ProductUpdate, user_id: uuid.UUID
     ) -> ProductRead:
-        """Update product fields and write a history snapshot; raises 409 if inactive."""
+        """Update product fields and write a history snapshot; 409 if inactive."""
         product = await self._get_or_404(product_id)
         if not product.is_active:
             raise HTTPException(
@@ -83,7 +83,7 @@ class ProductService:
         return ProductRead.model_validate(product)
 
     async def get_history(self, product_id: uuid.UUID) -> list[ProductHistoryRead]:
-        """Return the full audit history for a product, newest first; raises 404 if product missing."""
+        """Return the full audit history for a product, newest first; 404 if missing."""
         await self._get_or_404(product_id)
         history = await self.repo.get_history(product_id)
         return [ProductHistoryRead.model_validate(h) for h in history]

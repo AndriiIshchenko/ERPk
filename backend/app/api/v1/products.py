@@ -64,7 +64,7 @@ async def update_product(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Update a product's fields and record the change in history; returns 409 if inactive."""
+    """Update a product's fields and record the change in history; 409 if inactive."""
     return await ProductService(db).update_product(product_id, data, current_user.id)
 
 

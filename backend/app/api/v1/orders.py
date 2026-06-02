@@ -57,7 +57,7 @@ async def add_item(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    """Add a product to a draft order; returns 409 if already present or order is not draft."""
+    """Add a product to a draft order; 409 if already present or order is not draft."""
     return await OrderService(db).add_item(order_id, data.product_id)
 
 

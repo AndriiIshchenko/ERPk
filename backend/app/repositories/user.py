@@ -26,7 +26,7 @@ class UserRepository:
         return result.scalar_one_or_none()
 
     async def create(self, data: UserCreate) -> User:
-        """Hash the password, insert a new user row, and return the persisted instance."""
+        """Hash the password, insert a new user row, return the persisted instance."""
         user = User(email=data.email, hashed_password=hash_password(data.password))
         self.db.add(user)
         await self.db.commit()

@@ -10,7 +10,7 @@ app = FastAPI(title="ERPk Order Management", version="1.0.0")
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """Return the first validation error as a plain string instead of Pydantic's nested list."""
+    """Return the first validation error as a plain string instead of a nested list."""
     messages = []
     for error in exc.errors():
         field = ".".join(str(loc) for loc in error["loc"] if loc != "body")
