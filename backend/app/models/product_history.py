@@ -1,14 +1,16 @@
 import uuid
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from decimal import Decimal
 
 from app.core.database import Base
 
 
 class ProductHistory(Base):
+    """Audit log row capturing a product's state before each mutation."""
+
     __tablename__ = "product_history"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
@@ -33,4 +35,5 @@ class ProductHistory(Base):
 
     @property
     def changed_by_email(self) -> str:
+        """Return the email of the user who made this change, or empty string if unloaded."""
         return self.changed_by.email if self.changed_by else ""

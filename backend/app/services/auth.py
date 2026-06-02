@@ -7,10 +7,14 @@ from app.schemas.user import UserCreate, Token
 
 
 class AuthService:
+    """Business logic for user registration and authentication."""
+
     def __init__(self, db: AsyncSession):
+        """Bind service to a database session."""
         self.repo = UserRepository(db)
 
     async def register(self, data: UserCreate) -> Token:
+        """Create a new user and return a JWT; raises 409 if the email is taken."""
         existing = await self.repo.get_by_email(data.email)
         if existing:
             raise HTTPException(
@@ -22,6 +26,7 @@ class AuthService:
         return Token(access_token=token)
 
     async def login(self, email: str, password: str) -> Token:
+        """Verify credentials and return a JWT; raises 401 on bad email or password."""
         user = await self.repo.get_by_email(email)
         if not user or not verify_password(password, user.hashed_password):
             raise HTTPException(

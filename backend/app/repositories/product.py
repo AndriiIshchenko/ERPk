@@ -11,14 +11,19 @@ from app.schemas.product import ProductCreate, ProductUpdate
 
 
 class ProductRepository:
+    """Database queries for the Product and ProductHistory entities."""
+
     def __init__(self, db: AsyncSession):
+        """Bind repository to a database session."""
         self.db = db
 
     async def get_by_id(self, product_id: uuid.UUID) -> Product | None:
+        """Return a product by primary key, or None."""
         result = await self.db.execute(select(Product).where(Product.id == product_id))
         return result.scalar_one_or_none()
 
     async def get_all(self, include_inactive: bool = False) -> list[Product]:
+        """Return all products; filters out inactive ones unless include_inactive is True."""
         stmt = select(Product)
         if not include_inactive:
             stmt = stmt.where(Product.deactivated_at.is_(None))
@@ -26,12 +31,14 @@ class ProductRepository:
         return list(result.scalars().all())
 
     async def get_by_ids(self, product_ids: list[uuid.UUID]) -> list[Product]:
+        """Return products whose IDs are in the given list."""
         result = await self.db.execute(
             select(Product).where(Product.id.in_(product_ids))
         )
         return list(result.scalars().all())
 
     async def get_history(self, product_id: uuid.UUID) -> list[ProductHistory]:
+        """Return audit history rows for a product, newest first, with changed_by user loaded."""
         result = await self.db.execute(
             select(ProductHistory)
             .options(joinedload(ProductHistory.changed_by))
@@ -43,6 +50,7 @@ class ProductRepository:
     def _snapshot(
         self, product: Product, change_type: str, user_id: uuid.UUID
     ) -> ProductHistory:
+        """Build an unsaved ProductHistory row capturing the product's current state."""
         return ProductHistory(
             product_id=product.id,
             changed_by_user_id=user_id,
@@ -53,6 +61,7 @@ class ProductRepository:
         )
 
     async def create(self, data: ProductCreate) -> Product:
+        """Insert a new product row and return the persisted instance."""
         product = Product(**data.model_dump())
         self.db.add(product)
         await self.db.commit()
@@ -62,6 +71,7 @@ class ProductRepository:
     async def update(
         self, product: Product, data: ProductUpdate, user_id: uuid.UUID
     ) -> Product:
+        """Snapshot current state, apply field changes, and commit."""
         self.db.add(self._snapshot(product, "update", user_id))
         for field, value in data.model_dump(exclude_unset=True).items():
             setattr(product, field, value)
@@ -70,6 +80,7 @@ class ProductRepository:
         return product
 
     async def deactivate(self, product: Product, user_id: uuid.UUID) -> Product:
+        """Snapshot current state, set deactivated_at to now, and commit."""
         self.db.add(self._snapshot(product, "deactivate", user_id))
         product.deactivated_at = datetime.now(timezone.utc)
         await self.db.commit()
@@ -77,6 +88,7 @@ class ProductRepository:
         return product
 
     async def restore(self, product: Product, user_id: uuid.UUID) -> Product:
+        """Snapshot current state, clear deactivated_at, and commit."""
         self.db.add(self._snapshot(product, "restore", user_id))
         product.deactivated_at = None
         await self.db.commit()
@@ -84,5 +96,6 @@ class ProductRepository:
         return product
 
     async def delete(self, product: Product) -> None:
+        """Hard-delete a product row and commit."""
         await self.db.delete(product)
         await self.db.commit()

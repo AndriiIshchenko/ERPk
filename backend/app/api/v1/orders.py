@@ -16,6 +16,7 @@ async def list_orders(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Return all orders."""
     return await OrderService(db).list_orders()
 
 
@@ -25,6 +26,7 @@ async def list_orders_by_customer(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Return all orders belonging to a specific customer."""
     return await OrderService(db).list_by_customer(customer_id)
 
 
@@ -34,6 +36,7 @@ async def get_order(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Return a single order by ID, or 404 if not found."""
     return await OrderService(db).get_order(order_id)
 
 
@@ -43,6 +46,7 @@ async def create_order(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Create an empty draft order for an existing customer."""
     return await OrderService(db).create_order(data)
 
 
@@ -53,6 +57,7 @@ async def add_item(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Add a product to a draft order; returns 409 if already present or order is not draft."""
     return await OrderService(db).add_item(order_id, data.product_id)
 
 
@@ -63,6 +68,7 @@ async def remove_item(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Remove a line item from a draft order."""
     return await OrderService(db).remove_item(order_id, item_id)
 
 
@@ -72,6 +78,7 @@ async def mark_paid(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Transition a pending order to paid status."""
     return await OrderService(db).mark_paid(order_id)
 
 
@@ -81,6 +88,7 @@ async def confirm_order(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Confirm a draft order (moves to pending); requires at least one item."""
     return await OrderService(db).confirm_order(order_id)
 
 
@@ -90,6 +98,7 @@ async def cancel_order(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Cancel a draft or pending order."""
     return await OrderService(db).cancel_order(order_id)
 
 
@@ -99,4 +108,5 @@ async def delete_order(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Hard-delete an order and all its items."""
     await OrderService(db).delete_order(order_id)

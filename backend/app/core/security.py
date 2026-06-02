@@ -14,14 +14,17 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 def hash_password(password: str) -> str:
+    """Hash a plain-text password using bcrypt."""
     return pwd_context.hash(password)
 
 
 def verify_password(plain: str, hashed: str) -> bool:
+    """Return True if the plain password matches the bcrypt hash."""
     return pwd_context.verify(plain, hashed)
 
 
 def create_access_token(data: dict) -> str:
+    """Encode a JWT containing data with the configured expiry."""
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
@@ -34,6 +37,7 @@ async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db),
 ):
+    """FastAPI dependency that decodes the Bearer token and returns the authenticated user."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

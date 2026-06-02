@@ -16,6 +16,7 @@ async def list_customers(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Return all customers."""
     return await CustomerService(db).list_customers()
 
 
@@ -25,6 +26,7 @@ async def get_customer(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Return a single customer by ID, or 404 if not found."""
     return await CustomerService(db).get_customer(customer_id)
 
 
@@ -34,6 +36,7 @@ async def create_customer(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Create a new customer; returns 409 if the email is already registered."""
     return await CustomerService(db).create_customer(data)
 
 
@@ -44,6 +47,7 @@ async def update_customer(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Update a customer's fields; returns 409 on duplicate email."""
     return await CustomerService(db).update_customer(customer_id, data)
 
 
@@ -53,4 +57,5 @@ async def delete_customer(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    """Hard-delete a customer by ID."""
     await CustomerService(db).delete_customer(customer_id)

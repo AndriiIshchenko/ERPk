@@ -33,4 +33,5 @@ class Product(Base):
 
     @property
     def is_active(self) -> bool:
+        """Return True if the product has not been soft-deleted."""
         return self.deactivated_at is None

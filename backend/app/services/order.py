@@ -11,12 +11,16 @@ from app.schemas.order import OrderCreate, OrderRead
 
 
 class OrderService:
+    """Business logic for order lifecycle management."""
+
     def __init__(self, db: AsyncSession):
+        """Bind service to a database session."""
         self.repo = OrderRepository(db)
         self.customer_repo = CustomerRepository(db)
         self.product_repo = ProductRepository(db)
 
     async def _get_or_404(self, order_id: uuid.UUID) -> Order:
+        """Load an order by ID or raise 404."""
         order = await self.repo.get_by_id(order_id)
         if not order:
             raise HTTPException(
@@ -25,6 +29,7 @@ class OrderService:
         return order
 
     def _require_draft(self, order: Order) -> None:
+        """Raise 409 if the order is not in draft status."""
         if order.status != OrderStatus.draft:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -32,18 +37,22 @@ class OrderService:
             )
 
     async def list_orders(self) -> list[OrderRead]:
+        """Return all orders."""
         orders = await self.repo.get_all()
         return [OrderRead.model_validate(o) for o in orders]
 
     async def get_order(self, order_id: uuid.UUID) -> OrderRead:
+        """Return a single order by ID, or raise 404."""
         order = await self._get_or_404(order_id)
         return OrderRead.model_validate(order)
 
     async def list_by_customer(self, customer_id: uuid.UUID) -> list[OrderRead]:
+        """Return all orders for a given customer."""
         orders = await self.repo.get_by_customer_id(customer_id)
         return [OrderRead.model_validate(o) for o in orders]
 
     async def create_order(self, data: OrderCreate) -> OrderRead:
+        """Create a new draft order for an existing customer; raises 404 if customer not found."""
         if not await self.customer_repo.get_by_id(data.customer_id):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found"
@@ -52,6 +61,7 @@ class OrderService:
         return OrderRead.model_validate(order)
 
     async def add_item(self, order_id: uuid.UUID, product_id: uuid.UUID) -> OrderRead:
+        """Add a product to a draft order; raises 409 if duplicate or order not draft."""
         order = await self._get_or_404(order_id)
         self._require_draft(order)
         if any(item.product_id == product_id for item in order.items):
@@ -68,6 +78,7 @@ class OrderService:
         return OrderRead.model_validate(order)
 
     async def remove_item(self, order_id: uuid.UUID, item_id: uuid.UUID) -> OrderRead:
+        """Remove a line item from a draft order; raises 409 if order not draft, 404 if item missing."""
         order = await self._get_or_404(order_id)
         self._require_draft(order)
         item = await self.repo.get_item(order_id, item_id)
@@ -79,6 +90,7 @@ class OrderService:
         return OrderRead.model_validate(order)
 
     async def confirm_order(self, order_id: uuid.UUID) -> OrderRead:
+        """Transition a draft order to pending; raises 422 if empty, 409 if not draft."""
         order = await self._get_or_404(order_id)
         self._require_draft(order)
         if not order.items:
@@ -90,6 +102,7 @@ class OrderService:
         return OrderRead.model_validate(order)
 
     async def mark_paid(self, order_id: uuid.UUID) -> OrderRead:
+        """Transition a pending order to paid; raises 409 if order is not pending."""
         order = await self._get_or_404(order_id)
         if order.status != OrderStatus.pending:
             raise HTTPException(
@@ -100,6 +113,7 @@ class OrderService:
         return OrderRead.model_validate(order)
 
     async def cancel_order(self, order_id: uuid.UUID) -> OrderRead:
+        """Cancel a draft or pending order; raises 409 if already paid or cancelled."""
         order = await self._get_or_404(order_id)
         if order.status not in (OrderStatus.draft, OrderStatus.pending):
             raise HTTPException(
@@ -110,5 +124,6 @@ class OrderService:
         return OrderRead.model_validate(order)
 
     async def delete_order(self, order_id: uuid.UUID) -> None:
+        """Hard-delete an order and all its items; raises 404 if not found."""
         order = await self._get_or_404(order_id)
         await self.repo.delete(order)

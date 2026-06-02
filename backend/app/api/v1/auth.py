@@ -10,9 +10,11 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=Token, status_code=201)
 async def register(data: UserCreate, db: AsyncSession = Depends(get_db)):
+    """Register a new user and return a JWT access token."""
     return await AuthService(db).register(data)
 
 
 @router.post("/login", response_model=Token)
 async def login(data: UserCreate, db: AsyncSession = Depends(get_db)):
+    """Authenticate with email and password and return a JWT access token."""
     return await AuthService(db).login(data.email, data.password)

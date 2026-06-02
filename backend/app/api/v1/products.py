@@ -23,6 +23,7 @@ async def list_products(
     db: AsyncSession = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
+    """Return products; inactive products are excluded unless include_inactive=true."""
     return await ProductService(db).list_products(include_inactive=include_inactive)
 
 
@@ -32,6 +33,7 @@ async def get_product(
     db: AsyncSession = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
+    """Return a single product by ID, or 404 if not found."""
     return await ProductService(db).get_product(product_id)
 
 
@@ -41,6 +43,7 @@ async def get_product_history(
     db: AsyncSession = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
+    """Return the full audit history for a product, newest entry first."""
     return await ProductService(db).get_history(product_id)
 
 
@@ -50,6 +53,7 @@ async def create_product(
     db: AsyncSession = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
+    """Create a new active product."""
     return await ProductService(db).create_product(data)
 
 
@@ -60,6 +64,7 @@ async def update_product(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Update a product's fields and record the change in history; returns 409 if inactive."""
     return await ProductService(db).update_product(product_id, data, current_user.id)
 
 
@@ -69,6 +74,7 @@ async def deactivate_product(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Soft-delete a product; returns 409 if already inactive."""
     return await ProductService(db).deactivate_product(product_id, current_user.id)
 
 
@@ -78,4 +84,5 @@ async def restore_product(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Restore a deactivated product; returns 409 if already active."""
     return await ProductService(db).restore_product(product_id, current_user.id)
