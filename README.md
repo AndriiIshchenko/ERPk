@@ -194,3 +194,6 @@ Key design decisions:
 | `ALGORITHM` | JWT algorithm (default: `HS256`) |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Token lifetime (default: `30`) |
 | `VITE_API_URL` | Backend URL used by the frontend |
+[![CI](https://github.com/AndriiIshchenko/ERPk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AndriiIshchenko/ERPk/actions/workflows/ci.yml)
+
+Simple test ERP 
