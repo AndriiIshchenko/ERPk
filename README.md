@@ -1,5 +1,7 @@
 # ERPk
 
+[![CI](https://github.com/AndriiIshchenko/ERPk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AndriiIshchenko/ERPk/actions/workflows/ci.yml)
+
 A full-stack order management system built with FastAPI and React.
 
 ## Features
@@ -79,6 +81,18 @@ cd frontend
 npm install
 npm run dev
 ```
+
+## CI
+
+The pipeline runs on every push and pull request to `main` and `develop`. It has three sequential jobs:
+
+| Job | What it does |
+|---|---|
+| **Lint** | Runs `black --check` and `flake8` against the backend source |
+| **Test** | Spins up a PostgreSQL 16 service container, runs `alembic upgrade head`, then `pytest` |
+| **Docker build** | Builds the backend and frontend Docker images to catch any `Dockerfile` regressions |
+
+Each job only runs if the previous one passes. The full workflow is defined in [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
 ## Running tests
 
