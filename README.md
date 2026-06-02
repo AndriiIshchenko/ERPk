@@ -1,5 +1,4 @@
 # ERPk
-[![CI](https://github.com/AndriiIshchenko/ERPk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AndriiIshchenko/ERPk/actions/workflows/ci.yml)
 
 A full-stack order management system built with FastAPI and React.
 
