@@ -83,7 +83,7 @@ class OrderService:
         self._require_draft(order)
         if not order.items:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=422,
                 detail="Cannot confirm an empty order — add at least one product first",
             )
         order = await self.repo.set_status(order, OrderStatus.pending)

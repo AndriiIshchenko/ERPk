@@ -18,7 +18,10 @@ def _order_opts():
 
 async def _reload(db: AsyncSession, order_id: uuid.UUID) -> Order:
     result = await db.execute(
-        select(Order).options(*_order_opts()).where(Order.id == order_id)
+        select(Order)
+        .options(*_order_opts())
+        .where(Order.id == order_id)
+        .execution_options(populate_existing=True)
     )
     return result.scalar_one()
 
