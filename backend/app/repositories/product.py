@@ -23,7 +23,7 @@ class ProductRepository:
         return result.scalar_one_or_none()
 
     async def get_all(self, include_inactive: bool = False) -> list[Product]:
-        """Return all products; inactive ones excluded unless include_inactive is True."""
+        """Return products; inactive ones excluded unless include_inactive is True."""
         stmt = select(Product)
         if not include_inactive:
             stmt = stmt.where(Product.deactivated_at.is_(None))

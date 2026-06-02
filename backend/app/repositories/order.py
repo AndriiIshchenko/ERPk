@@ -89,7 +89,7 @@ class OrderRepository:
         return await _reload(self.db, order.id)
 
     async def remove_item(self, order: Order, item: OrderItem) -> Order:
-        """Delete a line item, subtract its snapshot price from the total, return reloaded order."""
+        """Delete a line item, subtract its snapshot price from total, reload order."""
         order.total_amount = Decimal(str(order.total_amount)) - item.price_snapshot
         await self.db.delete(item)
         await self.db.commit()

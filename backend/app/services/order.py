@@ -78,7 +78,7 @@ class OrderService:
         return OrderRead.model_validate(order)
 
     async def remove_item(self, order_id: uuid.UUID, item_id: uuid.UUID) -> OrderRead:
-        """Remove a line item from a draft order; 409 if not draft, 404 if item missing."""
+        """Remove a line item from a draft order; 409 if not draft, 404 if missing."""
         order = await self._get_or_404(order_id)
         self._require_draft(order)
         item = await self.repo.get_item(order_id, item_id)
