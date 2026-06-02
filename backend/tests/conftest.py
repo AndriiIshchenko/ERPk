@@ -8,7 +8,7 @@ from app.core.database import Base, get_db
 from app.main import app
 
 TEST_DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql+asyncpg://erpk:erpk@localhost:5432/orders_test"
+    "TEST_DATABASE_URL", "postgresql+asyncpg://erpk:erpk@localhost:5432/orders_test"
 )
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False, poolclass=NullPool)
